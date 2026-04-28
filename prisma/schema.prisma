@@ -46,6 +46,33 @@ model User {
   password      String?
   accounts      Account[]
   sessions      Session[]
+  books         Book[]
+}
+
+model Book {
+  id            String    @id @default(cuid())
+  title         String
+  status        BookStatus  @default(WANT_TO_READ)
+  priority      Priority    @default(MEDIUM)
+  startDate     DateTime?
+  targetEndDate DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum BookStatus {
+  READING
+  FINISHED
+  PAUSED
+  WANT_TO_READ
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
 }
 
 model VerificationToken {
