@@ -54,6 +54,8 @@ model Book {
   title         String
   status        BookStatus  @default(WANT_TO_READ)
   priority      Priority    @default(MEDIUM)
+  totalPages    Int?
+  currentPage   Int?
   startDate     DateTime?
   targetEndDate DateTime?
   createdAt     DateTime  @default(now())
