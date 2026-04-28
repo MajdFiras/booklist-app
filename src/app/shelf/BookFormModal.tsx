@@ -71,66 +71,33 @@ export default function BookFormModal({ book, onClose }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                Total pages
-              </label>
-              <input
-                name="totalPages"
-                type="number"
-                min={1}
-                defaultValue={book?.totalPages ?? ""}
-                placeholder="e.g. 320"
-                className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-50 dark:focus:ring-stone-100"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                Current page
-              </label>
-              <input
-                name="currentPage"
-                type="number"
-                min={0}
-                defaultValue={book?.currentPage ?? ""}
-                placeholder="e.g. 45"
-                className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-50 dark:focus:ring-stone-100"
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-stone-700 dark:text-stone-300">
+              Total pages
+            </label>
+            <input
+              name="totalPages"
+              type="number"
+              min={1}
+              defaultValue={book?.totalPages ?? ""}
+              placeholder="e.g. 320"
+              className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-50 dark:focus:ring-stone-100"
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                Status
-              </label>
-              <select
-                name="status"
-                defaultValue={book?.status ?? "WANT_TO_READ"}
-                className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-50 dark:focus:ring-stone-100"
-              >
-                <option value="WANT_TO_READ">Want to Read</option>
-                <option value="READING">Reading</option>
-                <option value="PAUSED">Paused</option>
-                <option value="FINISHED">Finished</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                Priority
-              </label>
-              <select
-                name="priority"
-                defaultValue={book?.priority ?? "MEDIUM"}
-                className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-50 dark:focus:ring-stone-100"
-              >
-                <option value="HIGH">High</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="LOW">Low</option>
-              </select>
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-stone-700 dark:text-stone-300">
+              Priority
+            </label>
+            <select
+              name="priority"
+              defaultValue={book?.priority ?? "MEDIUM"}
+              className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-50 dark:focus:ring-stone-100"
+            >
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
