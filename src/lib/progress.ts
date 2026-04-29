@@ -100,15 +100,27 @@ export async function applyDailyDecay(userId: string, activeBooks: Book[]) {
   const maxPerDay = dailyGoals.length > 0 ? Math.max(...dailyGoals) : 0;
 
   const decay = maxPerDay * missedDays;
-  const newBucket = Math.max(0, progress.waterBucket - decay);
+
+  let newBucket = progress.waterBucket - decay;
+  let newStage  = progress.treeStage;
+
+  if (newBucket < 0 && newStage > 0) {
+    // Drop one stage, reset bucket to 100 (full bar of the lower stage)
+    newStage  -= 1;
+    newBucket  = 100;
+  } else {
+    // Already at stage 0 — just floor the bucket at 0
+    newBucket = Math.max(0, newBucket);
+  }
 
   await prisma.userProgress.update({
     where: { userId },
     data: {
-      waterBucket: newBucket,
-      lastReadDate: today,   // prevents double-drain on same day
+      treeStage:    newStage,
+      waterBucket:  newBucket,
+      lastReadDate: today,
     },
   });
 
-  return { treeStage: progress.treeStage, waterBucket: newBucket, totalPages: progress.totalPages };
+  return { treeStage: newStage, waterBucket: newBucket, totalPages: progress.totalPages };
 }
