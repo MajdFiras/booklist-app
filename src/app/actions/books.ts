@@ -82,12 +82,18 @@ export async function incrementCurrentPage(id: string) {
     book.totalPages
   );
 
+  const pagesAdded = newCurrentPage - (book.currentPage ?? 0);
+
   await prisma.book.update({
     where: { id },
     data: { currentPage: newCurrentPage },
   });
 
+  // Water the tree by the number of pages actually read
+  await updateUserProgress(userId, pagesAdded);
+
   revalidatePath("/shelf");
+  revalidatePath("/tree");
 }
 
 export async function markBookFinished(id: string) {
