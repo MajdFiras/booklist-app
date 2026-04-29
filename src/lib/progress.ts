@@ -1,5 +1,12 @@
 import { prisma } from "@/lib/prisma";
 
+export type ProgressResult = {
+  treeStage: number;
+  waterBucket: number;
+  totalPages: number;
+  leveledUp: boolean;
+};
+
 export async function updateUserProgress(userId: string, pagesAdded: number) {
   if (pagesAdded <= 0) return;
 
