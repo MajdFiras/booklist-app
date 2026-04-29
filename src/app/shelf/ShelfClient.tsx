@@ -90,7 +90,7 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
           className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center"
           style={{ animation: "level-burst 1s ease-out forwards" }}
         >
-          <div className="w-80 h-80 rounded-full border-4 border-yellow-400/60 shadow-[0_0_100px_30px_rgba(251,191,36,0.25)]" />
+          <div className="w-80 h-80 rounded-full border-4 border-emerald-400/50 shadow-[0_0_80px_20px_rgba(52,211,153,0.2)]" />
         </div>
       )}
 
@@ -148,12 +148,10 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
 
       {/* ── Knowledge Tree Widget ─────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6 pb-10">
-        <div
-          className="rounded-3xl overflow-hidden flex flex-col sm:flex-row items-stretch"
-          style={{ background: "#0c1008" }}
-        >
-          {/* Mini tree */}
-          <div className="flex-shrink-0 flex items-end justify-center px-6 pt-5 pb-0 sm:pb-5 sm:pr-2">
+        <div className="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col sm:flex-row items-stretch">
+
+          {/* Mini tree — light green tinted bg */}
+          <div className="flex-shrink-0 flex items-end justify-center bg-[#f0f7ec] px-6 pt-5 pb-0 sm:pb-5 sm:pr-2">
             <div className="w-28">
               <TreeCanvas stage={treeStage} />
             </div>
@@ -162,13 +160,13 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
           {/* Stage info + water bar */}
           <div className="flex-1 flex flex-col justify-center gap-3 px-6 py-5">
             <div>
-              <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-white/30 mb-0.5">
+              <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-stone-400 mb-0.5">
                 Knowledge Tree · Stage {treeStage}
               </p>
-              <h3 className="text-xl font-bold tracking-tight text-white">
+              <h3 className="text-xl font-bold tracking-tight text-stone-900">
                 {STAGE_NAMES[treeStage]}
                 {treeStage === 10 && (
-                  <span className="ml-2 text-sm font-semibold text-yellow-400/80"> ✦ Legendary</span>
+                  <span className="ml-2 text-sm font-semibold text-amber-500"> ✦ Legendary</span>
                 )}
               </h3>
             </div>
@@ -176,35 +174,37 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
             {/* Horizontal water bar */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-white/40 font-medium">Water</span>
+                <span className="text-stone-400 font-medium">Water</span>
                 <span
                   className="tabular-nums font-bold transition-colors duration-300"
-                  style={{ color: levelingUp ? "#fbbf24" : "#7dd3fc" }}
+                  style={{ color: levelingUp ? "#d97706" : "#0ea5e9" }}
                 >
                   {bucketPct} / 100
                 </span>
               </div>
-              <div className="relative h-3 rounded-full bg-white/5 border border-white/10 overflow-hidden">
+              {/* Bar track */}
+              <div className="relative h-3 rounded-full bg-stone-100 overflow-hidden">
+                {/* Fill */}
                 <div
-                  className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-700 ease-out"
+                  className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-700 ease-out overflow-hidden"
                   style={{
                     width: `${bucketPct}%`,
                     background: levelingUp
-                      ? "linear-gradient(to right, #fbbf24, #fef08a)"
+                      ? "linear-gradient(to right, #f59e0b, #fbbf24)"
                       : "linear-gradient(to right, #0ea5e9, #38bdf8)",
                   }}
                 >
-                  <div className="shimmer-bar absolute inset-y-0 w-8 bg-white/30 rounded-full" />
+                  <div className="shimmer-bar absolute inset-0 rounded-full" />
                 </div>
               </div>
-              <p className="text-[11px] text-white/25">
+              <p className="text-[11px] text-stone-400">
                 {totalPages.toLocaleString()} pages read
                 {treeStage < 10 && ` · ${100 - (waterBucket % 100 === 0 && waterBucket > 0 ? 100 : waterBucket % 100)} to next stage`}
               </p>
             </div>
 
             {treeStage === 0 && waterBucket === 0 && (
-              <p className="text-[11px] italic text-white/20">
+              <p className="text-[11px] italic text-stone-300">
                 Log reading below to bring your tree to life
               </p>
             )}
