@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { Priority } from "@/generated/prisma/client";
 import { calcPagesPerDay } from "@/lib/bookUtils";
+import { updateUserProgress } from "@/lib/progress";
 
 async function getUserId() {
   const session = await getServerSession(authOptions);
