@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { Book } from "@/generated/prisma/client";
+import { calcPagesPerDay } from "@/lib/bookUtils";
 
 export type ProgressResult = {
   treeStage: number;
@@ -6,6 +8,15 @@ export type ProgressResult = {
   totalPages: number;
   leveledUp: boolean;
 };
+
+// UTC midnight for a given date — used to compare calendar days
+function utcDay(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+function diffDays(a: Date, b: Date): number {
+  return Math.round((a.getTime() - b.getTime()) / 86_400_000);
+}
 
 export async function updateUserProgress(userId: string, pagesAdded: number) {
   if (pagesAdded <= 0) return;
@@ -26,7 +37,6 @@ export async function updateUserProgress(userId: string, pagesAdded: number) {
     leveledUp = true;
   }
 
-  // If already at max stage, still clamp bucket
   if (treeStage >= 10) waterBucket = Math.min(waterBucket, 99);
 
   await prisma.userProgress.update({
@@ -35,8 +45,70 @@ export async function updateUserProgress(userId: string, pagesAdded: number) {
       waterBucket,
       treeStage,
       totalPages: current.totalPages + pagesAdded,
+      lastReadDate: utcDay(new Date()),
     },
   });
 
   return { treeStage, waterBucket, totalPages: current.totalPages + pagesAdded, leveledUp };
+}
+
+/**
+ * Called on every shelf page load.
+ * - Creates UserProgress if missing.
+ * - Checks how many calendar days were missed since the last reading log.
+ * - Drains waterBucket by (maxPagesPerDay × missedDays), floored at 0.
+ * - Updates lastReadDate to today so repeated page loads don't drain again.
+ */
+export async function applyDailyDecay(userId: string, activeBooks: Book[]) {
+  const today = utcDay(new Date());
+  const yesterday = new Date(today.getTime() - 86_400_000);
+
+  const progress = await prisma.userProgress.upsert({
+    where: { userId },
+    create: {
+      userId,
+      treeStage: 0,
+      waterBucket: 0,
+      totalPages: 0,
+      lastReadDate: today,
+    },
+    update: {},
+  });
+
+  // First visit ever — just set today and return
+  if (!progress.lastReadDate) {
+    await prisma.userProgress.update({
+      where: { userId },
+      data: { lastReadDate: today },
+    });
+    return { treeStage: progress.treeStage, waterBucket: progress.waterBucket, totalPages: progress.totalPages };
+  }
+
+  const lastRead = utcDay(progress.lastReadDate);
+
+  // missedDays = full calendar days skipped BEFORE today
+  // e.g. lastRead = Monday, today = Thursday → yesterday = Wednesday
+  //       Wed - Mon = 2 → missed Tue + Wed
+  const missedDays = Math.max(0, diffDays(yesterday, lastRead));
+
+  if (missedDays === 0) {
+    return { treeStage: progress.treeStage, waterBucket: progress.waterBucket, totalPages: progress.totalPages };
+  }
+
+  // Highest pagesPerDay across books that have a calculable daily goal
+  const dailyGoals = activeBooks.map(b => calcPagesPerDay(b) ?? 0).filter(p => p > 0);
+  const maxPerDay = dailyGoals.length > 0 ? Math.max(...dailyGoals) : 0;
+
+  const decay = maxPerDay * missedDays;
+  const newBucket = Math.max(0, progress.waterBucket - decay);
+
+  await prisma.userProgress.update({
+    where: { userId },
+    data: {
+      waterBucket: newBucket,
+      lastReadDate: today,   // prevents double-drain on same day
+    },
+  });
+
+  return { treeStage: progress.treeStage, waterBucket: newBucket, totalPages: progress.totalPages };
 }

@@ -2,23 +2,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { applyDailyDecay } from "@/lib/progress";
 import ShelfClient from "./ShelfClient";
 
 export default async function ShelfPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/signin");
 
-  const [books, progress] = await Promise.all([
-    prisma.book.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.userProgress.upsert({
-      where: { userId: session.user.id },
-      create: { userId: session.user.id, treeStage: 0, waterBucket: 0, totalPages: 0 },
-      update: {},
-    }),
-  ]);
+  const books = await prisma.book.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const activeBooks = books.filter(b => b.status !== "FINISHED");
+  const progress = await applyDailyDecay(session.user.id, activeBooks);
 
   return (
     <ShelfClient
