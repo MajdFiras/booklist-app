@@ -51,13 +51,14 @@ model User {
 }
 
 model UserProgress {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id])
-  treeStage   Int      @default(0)
-  waterBucket Int      @default(0)
-  totalPages  Int      @default(0)
-  updatedAt   DateTime @updatedAt
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id])
+  treeStage    Int       @default(0)
+  waterBucket  Int       @default(0)
+  totalPages   Int       @default(0)
+  lastReadDate DateTime?
+  updatedAt    DateTime  @updatedAt
 }
 
 model Book {
