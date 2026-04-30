@@ -86,7 +86,7 @@ export async function incrementCurrentPage(id: string): Promise<ProgressResult |
 
   await prisma.book.update({
     where: { id },
-    data: { currentPage: newCurrentPage },
+    data: { currentPage: newCurrentPage, status: "READING" },
   });
 
   const progress = await updateUserProgress(userId, pagesAdded);
