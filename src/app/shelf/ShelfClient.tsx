@@ -149,17 +149,17 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
 
       {/* ── Knowledge Tree Widget ─────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6 pb-10">
-        <div className="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col sm:flex-row items-stretch">
+        <div className="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col sm:flex-row">
 
-          {/* Mini tree */}
-          <div className="flex-shrink-0 flex items-end justify-center bg-[#f0f7ec] px-6 pt-5 pb-0 sm:pb-5 sm:pr-2">
-            <div className="w-28">
+          {/* Tree panel — centered on all screen sizes */}
+          <div className="bg-[#f0f7ec] flex items-center justify-center p-6 sm:w-52 sm:flex-shrink-0">
+            <div className="w-36 sm:w-40">
               <TreeCanvas stage={treeStage} />
             </div>
           </div>
 
           {/* Stage info + water bar */}
-          <div className="flex-1 flex flex-col justify-center gap-3 px-6 py-5">
+          <div className="flex-1 flex flex-col justify-center gap-3 p-6">
 
             {/* Header row: label + ? button */}
             <div className="flex items-start justify-between gap-2">
