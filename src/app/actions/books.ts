@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { Priority } from "@/generated/prisma/client";
 import { calcPagesPerDay } from "@/lib/bookUtils";
+import { updateUserProgress, ProgressResult } from "@/lib/progress";
 
 async function getUserId() {
   const session = await getServerSession(authOptions);
@@ -67,7 +68,7 @@ export async function updateBook(formData: FormData) {
   revalidatePath("/shelf");
 }
 
-export async function incrementCurrentPage(id: string) {
+export async function incrementCurrentPage(id: string): Promise<ProgressResult | null> {
   const userId = await getUserId();
 
   const book = await prisma.book.findFirst({ where: { id, userId } });
@@ -81,19 +82,26 @@ export async function incrementCurrentPage(id: string) {
     book.totalPages
   );
 
+  const pagesAdded = newCurrentPage - (book.currentPage ?? 0);
+
   await prisma.book.update({
     where: { id },
     data: { currentPage: newCurrentPage },
   });
 
+  const progress = await updateUserProgress(userId, pagesAdded);
+
   revalidatePath("/shelf");
+  return progress ?? null;
 }
 
-export async function markBookFinished(id: string) {
+export async function markBookFinished(id: string): Promise<ProgressResult | null> {
   const userId = await getUserId();
 
   const existing = await prisma.book.findFirst({ where: { id, userId } });
   if (!existing) throw new Error("Book not found");
+
+  const pagesAdded = (existing.totalPages ?? 0) - (existing.currentPage ?? 0);
 
   await prisma.book.update({
     where: { id },
@@ -103,7 +111,10 @@ export async function markBookFinished(id: string) {
     },
   });
 
+  const progress = pagesAdded > 0 ? await updateUserProgress(userId, pagesAdded) : null;
+
   revalidatePath("/shelf");
+  return progress ?? null;
 }
 
 export async function deleteBook(id: string) {

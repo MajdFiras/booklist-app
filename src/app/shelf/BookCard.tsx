@@ -3,6 +3,7 @@
 import { Book } from "@/generated/prisma/client";
 import { deleteBook, incrementCurrentPage, markBookFinished } from "@/app/actions/books";
 import { calcPagesPerDay } from "@/lib/bookUtils";
+import { ProgressResult } from "@/lib/progress";
 import { useState } from "react";
 
 const COVER_GRADIENTS = [
@@ -38,9 +39,10 @@ function formatDate(date: Date | null) {
 type Props = {
   book: Book;
   onEdit: () => void;
+  onPagesLogged?: (result: ProgressResult) => void;
 };
 
-export default function BookCard({ book, onEdit }: Props) {
+export default function BookCard({ book, onEdit, onPagesLogged }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -64,11 +66,10 @@ export default function BookCard({ book, onEdit }: Props) {
 
   async function handleConfirm() {
     setLoading(true);
-    if (willComplete) {
-      await markBookFinished(book.id);
-    } else {
-      await incrementCurrentPage(book.id);
-    }
+    const result = willComplete
+      ? await markBookFinished(book.id)
+      : await incrementCurrentPage(book.id);
+    if (result) onPagesLogged?.(result);
     setConfirming(false);
     setLoading(false);
   }
