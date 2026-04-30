@@ -149,7 +149,16 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
 
       {/* ── Knowledge Tree Widget ─────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6 pb-10">
-        <div className="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col sm:flex-row">
+        <div className="relative bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col sm:flex-row">
+
+          {/* ? button — absolute top-right of the card */}
+          <button
+            onClick={() => setShowInfo(true)}
+            className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full border border-stone-200 bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-600 flex items-center justify-center text-xs font-bold transition-colors shadow-sm"
+            aria-label="What is the Knowledge Tree?"
+          >
+            ?
+          </button>
 
           {/* Tree panel — centered on all screen sizes */}
           <div className="bg-[#f0f7ec] flex items-center justify-center p-6 sm:w-52 sm:flex-shrink-0">
@@ -161,26 +170,17 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
           {/* Stage info + water bar */}
           <div className="flex-1 flex flex-col justify-center gap-3 p-6">
 
-            {/* Header row: label + ? button */}
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-stone-400 mb-0.5">
-                  Knowledge Tree · Stage {treeStage}
-                </p>
-                <h3 className="text-xl font-bold tracking-tight text-stone-900">
-                  {STAGE_NAMES[treeStage]}
-                  {treeStage === 10 && (
-                    <span className="ml-2 text-sm font-semibold text-amber-500"> ✦ Legendary</span>
-                  )}
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowInfo(true)}
-                className="flex-shrink-0 w-6 h-6 rounded-full border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-400 hover:text-stone-600 flex items-center justify-center text-xs font-bold transition-colors mt-0.5"
-                aria-label="What is the Knowledge Tree?"
-              >
-                ?
-              </button>
+            {/* Stage label */}
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-stone-400 mb-0.5">
+                Knowledge Tree · Stage {treeStage}
+              </p>
+              <h3 className="text-xl font-bold tracking-tight text-stone-900">
+                {STAGE_NAMES[treeStage]}
+                {treeStage === 10 && (
+                  <span className="ml-2 text-sm font-semibold text-amber-500"> ✦ Legendary</span>
+                )}
+              </h3>
             </div>
 
             {/* Water bar — hidden at max level */}
