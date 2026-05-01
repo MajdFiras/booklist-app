@@ -48,6 +48,17 @@ model User {
   sessions      Session[]
   books         Book[]
   progress      UserProgress?
+  readingLogs   ReadingLog[]
+}
+
+model ReadingLog {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id])
+  date   DateTime
+  pages  Int      @default(0)
+
+  @@unique([userId, date])
 }
 
 model UserProgress {
