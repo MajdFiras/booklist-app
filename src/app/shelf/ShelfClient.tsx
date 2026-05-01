@@ -151,14 +151,26 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
       <div className="max-w-5xl mx-auto px-6 pb-10">
         <div className="relative bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col sm:flex-row">
 
-          {/* ? button — absolute top-right of the card */}
-          <button
-            onClick={() => setShowInfo(true)}
-            className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full border border-stone-200 bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-600 flex items-center justify-center text-xs font-bold transition-colors shadow-sm"
-            aria-label="What is the Knowledge Tree?"
-          >
-            ?
-          </button>
+          {/* Top-right action buttons */}
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+            {/* Analytics icon */}
+            <button
+              className="w-7 h-7 rounded-full border border-stone-200 bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-600 flex items-center justify-center transition-colors shadow-sm"
+              aria-label="Analytics"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </button>
+            {/* Info ? button */}
+            <button
+              onClick={() => setShowInfo(true)}
+              className="w-7 h-7 rounded-full border border-stone-200 bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-600 flex items-center justify-center text-xs font-bold transition-colors shadow-sm"
+              aria-label="What is the Knowledge Tree?"
+            >
+              ?
+            </button>
+          </div>
 
           {/* Tree panel — centered on all screen sizes */}
           <div className="bg-[#f0f7ec] flex items-center justify-center p-6 sm:w-52 sm:flex-shrink-0">
