@@ -89,6 +89,15 @@ export async function incrementCurrentPage(id: string): Promise<ProgressResult |
     data: { currentPage: newCurrentPage, status: "READING" },
   });
 
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  await prisma.readingLog.upsert({
+    where: { userId_date: { userId, date: today } },
+    create: { userId, date: today, pages: pagesAdded },
+    update: { pages: { increment: pagesAdded } },
+  });
+
   const progress = await updateUserProgress(userId, pagesAdded);
 
   revalidatePath("/shelf");

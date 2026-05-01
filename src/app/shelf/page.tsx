@@ -15,7 +15,18 @@ export default async function ShelfPage() {
   });
 
   const activeBooks = books.filter(b => b.status !== "FINISHED");
-  const progress = await applyDailyDecay(session.user.id, activeBooks);
+
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setUTCHours(0, 0, 0, 0);
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 13);
+
+  const [progress, readingLogs] = await Promise.all([
+    applyDailyDecay(session.user.id, activeBooks),
+    prisma.readingLog.findMany({
+      where: { userId: session.user.id, date: { gte: fourteenDaysAgo } },
+      orderBy: { date: "asc" },
+    }),
+  ]);
 
   return (
     <ShelfClient
@@ -24,6 +35,7 @@ export default async function ShelfPage() {
       initialStage={progress.treeStage}
       initialBucket={progress.waterBucket}
       initialTotal={progress.totalPages}
+      readingLogs={readingLogs.map(l => ({ date: l.date.toISOString(), pages: l.pages }))}
     />
   );
 }

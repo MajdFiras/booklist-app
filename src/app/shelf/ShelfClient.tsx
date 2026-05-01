@@ -10,12 +10,15 @@ import TreeCanvas from "@/app/tree/TreeCanvas";
 
 type ModalState = { mode: "create" } | { mode: "edit"; book: Book } | null;
 
+type ReadingLogEntry = { date: string; pages: number };
+
 type Props = {
   books: Book[];
   userName: string;
   initialStage: number;
   initialBucket: number;
   initialTotal: number;
+  readingLogs: ReadingLogEntry[];
 };
 
 const STAGE_NAMES = [
@@ -40,7 +43,108 @@ function delay(ms: number) {
   return new Promise(res => setTimeout(res, ms));
 }
 
-export default function ShelfClient({ books, userName, initialStage, initialBucket, initialTotal }: Props) {
+/* ── Analytics Modal ───────────────────────────────────────────────────── */
+
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function AnalyticsModal({
+  logs,
+  totalPages,
+  onClose,
+}: {
+  logs: ReadingLogEntry[];
+  totalPages: number;
+  onClose: () => void;
+}) {
+  // Build chart data for last 14 days
+  const chartData = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - (13 - i));
+    const iso = d.toISOString().slice(0, 10);
+    const log = logs.find(l => l.date.slice(0, 10) === iso);
+    return { label: DAY_LABELS[d.getUTCDay()], pages: log?.pages ?? 0, isToday: i === 13 };
+  });
+
+  const maxPages   = Math.max(...chartData.map(d => d.pages), 1);
+  const totalWeek  = chartData.slice(7).reduce((s, d) => s + d.pages, 0);
+  const bestDay    = Math.max(...chartData.map(d => d.pages));
+  const activeDays = chartData.filter(d => d.pages > 0).length;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-3xl shadow-xl p-6 w-full max-w-lg">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">Reading Analytics</h2>
+            <p className="text-xs text-stone-400 mt-0.5">Last 14 days</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-600 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Bar chart */}
+        <div className="bg-stone-50 rounded-2xl p-4 mb-5">
+          <div className="flex items-end gap-1.5 h-28">
+            {chartData.map((day, i) => {
+              const heightPct = (day.pages / maxPages) * 100;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  {/* Page count above bar */}
+                  <span className="text-[9px] font-semibold text-stone-400 leading-none h-3">
+                    {day.pages > 0 ? day.pages : ""}
+                  </span>
+                  {/* Bar track */}
+                  <div className="w-full flex-1 bg-stone-200 rounded-t-md flex items-end overflow-hidden">
+                    <div
+                      className={`w-full rounded-t-md transition-all duration-500 ${
+                        day.isToday ? "bg-emerald-500" : "bg-emerald-400/80"
+                      }`}
+                      style={{ height: `${heightPct}%`, minHeight: day.pages > 0 ? "4px" : "0" }}
+                    />
+                  </div>
+                  {/* Day label */}
+                  <span className={`text-[9px] font-medium leading-none ${day.isToday ? "text-emerald-600" : "text-stone-400"}`}>
+                    {day.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatCard label="Total pages" value={totalPages.toLocaleString()} color="text-stone-900" />
+          <StatCard label="This week" value={totalWeek.toString()} color="text-emerald-600" />
+          <StatCard label="Best day" value={`${bestDay} pg`} color="text-sky-600" />
+          <StatCard label="Active days" value={`${activeDays} / 14`} color="text-amber-600" />
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="bg-stone-50 rounded-2xl p-3 flex flex-col gap-0.5">
+      <p className="text-[10px] text-stone-400 font-medium uppercase tracking-wide">{label}</p>
+      <p className={`text-lg font-black ${color}`}>{value}</p>
+    </div>
+  );
+}
+
+export default function ShelfClient({ books, userName, initialStage, initialBucket, initialTotal, readingLogs }: Props) {
   const [modal, setModal] = useState<ModalState>(null);
 
   // Tree state — updated optimistically when pages are logged
@@ -49,7 +153,8 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
   const [totalPages,  setTotalPages]  = useState(initialTotal);
   const [levelingUp,  setLevelingUp]  = useState(false);
   const [showBurst,   setShowBurst]   = useState(false);
-  const [showInfo,    setShowInfo]    = useState(false);
+  const [showInfo,      setShowInfo]      = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const active   = books.filter(b => b.status !== "FINISHED");
   const finished = books.filter(b => b.status === "FINISHED");
@@ -155,6 +260,7 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
             {/* Analytics icon */}
             <button
+              onClick={() => setShowAnalytics(true)}
               className="w-7 h-7 rounded-full border border-stone-200 bg-white hover:bg-stone-100 text-stone-400 hover:text-stone-600 flex items-center justify-center transition-colors shadow-sm"
               aria-label="Analytics"
             >
@@ -291,6 +397,15 @@ export default function ShelfClient({ books, userName, initialStage, initialBuck
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── Analytics Modal ──────────────────────────────────────── */}
+      {showAnalytics && (
+        <AnalyticsModal
+          logs={readingLogs}
+          totalPages={totalPages}
+          onClose={() => setShowAnalytics(false)}
+        />
       )}
 
       {/* ── Books ────────────────────────────────────────────────── */}
