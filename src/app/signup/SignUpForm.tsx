@@ -2,9 +2,20 @@
 
 import { signUp } from "@/app/actions/auth";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+
+const REQUIREMENTS = [
+  { label: "At least 8 characters",       test: (p: string) => p.length >= 8 },
+  { label: "One uppercase letter (A–Z)",   test: (p: string) => /[A-Z]/.test(p) },
+  { label: "One lowercase letter (a–z)",   test: (p: string) => /[a-z]/.test(p) },
+  { label: "One number (0–9)",             test: (p: string) => /[0-9]/.test(p) },
+  { label: "One special character (!@#…)", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
 
 export default function SignUpForm() {
+  const [password, setPassword] = useState("");
+  const [touched, setTouched] = useState(false);
+
   const [error, action, pending] = useActionState(
     async (_prev: string, formData: FormData) => {
       try {
@@ -16,6 +27,8 @@ export default function SignUpForm() {
     },
     ""
   );
+
+  const allPassed = REQUIREMENTS.every(r => r.test(password));
 
   return (
     <div className="min-h-screen bg-[#f6f4f0] flex items-center justify-center px-4">
@@ -75,27 +88,46 @@ export default function SignUpForm() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-stone-700">
-                  Password
-                </label>
-                <span className="text-xs text-stone-400">Min. 8 characters</span>
-              </div>
+              <label htmlFor="password" className="text-sm font-medium text-stone-700">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
                 autoComplete="new-password"
-                minLength={8}
                 placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onBlur={() => setTouched(true)}
                 className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent transition-all placeholder:text-stone-300"
               />
+
+              {/* Requirements checklist — shown once user starts typing */}
+              {touched && password.length > 0 && (
+                <ul className="mt-1 flex flex-col gap-1">
+                  {REQUIREMENTS.map(req => {
+                    const passed = req.test(password);
+                    return (
+                      <li key={req.label} className={`flex items-center gap-2 text-xs ${passed ? "text-emerald-600" : "text-stone-400"}`}>
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {passed
+                            ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          }
+                        </svg>
+                        {req.label}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={pending}
+              disabled={pending || (touched && !allPassed)}
               className="mt-1 w-full rounded-xl bg-stone-900 hover:bg-stone-700 active:scale-[0.98] px-4 py-3 text-sm font-semibold text-white transition-all disabled:opacity-50"
             >
               {pending ? "Creating account…" : "Create account"}
