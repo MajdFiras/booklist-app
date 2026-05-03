@@ -56,14 +56,14 @@ function AnalyticsModal({
   totalPages: number;
   onClose: () => void;
 }) {
-  // Build chart data for last 14 days
-  const chartData = Array.from({ length: 14 }, (_, i) => {
+  // Build chart data for last 30 days
+  const chartData = Array.from({ length: 30 }, (_, i) => {
     const d = new Date();
     d.setUTCHours(0, 0, 0, 0);
-    d.setDate(d.getDate() - (13 - i));
+    d.setDate(d.getDate() - (29 - i));
     const iso = d.toISOString().slice(0, 10);
     const log = logs.find(l => l.date.slice(0, 10) === iso);
-    return { label: DAY_LABELS[d.getUTCDay()], pages: log?.pages ?? 0, isToday: i === 13 };
+    return { label: DAY_LABELS[d.getUTCDay()], pages: log?.pages ?? 0, isToday: i === 29 };
   });
 
   const maxPages   = Math.max(...chartData.map(d => d.pages), 1);
@@ -80,7 +80,7 @@ function AnalyticsModal({
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-lg font-bold text-stone-900">Reading Analytics</h2>
-            <p className="text-xs text-stone-400 mt-0.5">Last 14 days</p>
+            <p className="text-xs text-stone-400 mt-0.5">Last 30 days</p>
           </div>
           <button
             onClick={onClose}
@@ -94,26 +94,25 @@ function AnalyticsModal({
 
         {/* Bar chart */}
         <div className="bg-stone-50 rounded-2xl p-4 mb-5">
-          <div className="flex items-end gap-1.5 h-28">
+          <div className="flex items-end gap-px" style={{ height: "9rem" }}>
             {chartData.map((day, i) => {
               const heightPct = (day.pages / maxPages) * 100;
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  {/* Page count above bar */}
-                  <span className="text-[9px] font-semibold text-stone-400 leading-none h-3">
-                    {day.pages > 0 ? day.pages : ""}
-                  </span>
+                <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                   {/* Bar track */}
-                  <div className="w-full flex-1 bg-stone-200 rounded-t-md flex items-end overflow-hidden">
+                  <div className="w-full flex-1 bg-stone-200 rounded-t-sm flex items-end overflow-hidden">
                     <div
-                      className={`w-full rounded-t-md transition-all duration-500 ${
+                      className={`w-full rounded-t-sm transition-all duration-500 ${
                         day.isToday ? "bg-emerald-500" : "bg-emerald-400/80"
                       }`}
-                      style={{ height: `${heightPct}%`, minHeight: day.pages > 0 ? "4px" : "0" }}
+                      style={{ height: `${heightPct}%`, minHeight: day.pages > 0 ? "3px" : "0" }}
                     />
                   </div>
-                  {/* Day label */}
-                  <span className={`text-[9px] font-medium leading-none ${day.isToday ? "text-emerald-600" : "text-stone-400"}`}>
+                  {/* Vertical day label */}
+                  <span
+                    className={`text-[7px] font-medium leading-none ${day.isToday ? "text-emerald-600" : "text-stone-400"}`}
+                    style={{ writingMode: "vertical-lr", transform: "rotate(180deg)" }}
+                  >
                     {day.label}
                   </span>
                 </div>
@@ -127,7 +126,7 @@ function AnalyticsModal({
           <StatCard label="Total pages" value={totalPages.toLocaleString()} color="text-stone-900" />
           <StatCard label="This week" value={totalWeek.toString()} color="text-emerald-600" />
           <StatCard label="Best day" value={`${bestDay} pg`} color="text-sky-600" />
-          <StatCard label="Active days" value={`${activeDays} / 14`} color="text-amber-600" />
+          <StatCard label="Active days" value={`${activeDays} / 30`} color="text-amber-600" />
         </div>
 
       </div>

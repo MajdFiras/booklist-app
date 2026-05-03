@@ -16,14 +16,14 @@ export default async function ShelfPage() {
 
   const activeBooks = books.filter(b => b.status !== "FINISHED");
 
-  const fourteenDaysAgo = new Date();
-  fourteenDaysAgo.setUTCHours(0, 0, 0, 0);
-  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 13);
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setUTCHours(0, 0, 0, 0);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
 
   const [progress, readingLogs] = await Promise.all([
     applyDailyDecay(session.user.id, activeBooks),
     prisma.readingLog.findMany({
-      where: { userId: session.user.id, date: { gte: fourteenDaysAgo } },
+      where: { userId: session.user.id, date: { gte: thirtyDaysAgo } },
       orderBy: { date: "asc" },
     }),
   ]);
